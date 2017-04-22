@@ -5,7 +5,6 @@ import Test.Tasty
 import Test.Tasty.HUnit
 
 import Lib
-import qualified Set1.Ch3 as Ch3
 
 hexTest = testCase "fromHex" (fromHex "ffFF" @=? BS.pack [255,255])
 
