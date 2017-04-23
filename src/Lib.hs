@@ -4,8 +4,9 @@ where
 import Data.Bits
 import Data.Char
 import Data.List as List
-import Data.Word
 import Data.Ord
+import Data.String
+import Data.Word
 import Numeric
 
 
@@ -13,6 +14,11 @@ import qualified Data.ByteString as BS
 import qualified Data.ByteString.Base64 as Base64
 import qualified Data.List.Split as Split
 import qualified Data.Map.Strict as Map
+
+hex :: BS.ByteString -> BS.ByteString
+hex = BS.concatMap (fromString . wordHex)
+  where
+    wordHex n = showHex (n `div` 16) $ showHex (n `mod` 16) ""
 
 fromHex' :: String -> BS.ByteString
 fromHex' = BS.pack . List.map toWord . Split.chunksOf 2
@@ -34,7 +40,19 @@ base64 :: BS.ByteString -> BS.ByteString
 base64 = Base64.encode
 
 fullXor :: BS.ByteString -> BS.ByteString -> BS.ByteString
-fullXor a b = BS.pack $ List.map (uncurry xor) $ BS.zip a b
+fullXor a b = BS.pack . List.map (uncurry xor) $ BS.zip a b
+
+hamming :: BS.ByteString -> BS.ByteString -> Int
+hamming a b = List.sum . List.map (popCount . uncurry xor) $ BS.zip a b
+
+repXor :: BS.ByteString -> BS.ByteString -> BS.ByteString
+repXor s k = fullXor s rk
+  where
+    rk = BS.take l . BS.concat $ replicate l k
+    l = BS.length s
+
+
+
 
 counts :: BS.ByteString -> Map.Map Char Int
 counts = BS.foldl' adjust' zeroMap
